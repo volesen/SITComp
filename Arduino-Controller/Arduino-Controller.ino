@@ -4,10 +4,10 @@
 //Look into these, brake might need to be pulled low
 
 //Motor control pins
-int Motor_Left_Pin_PWM = 11;
-int Motor_Left_Pin_Direction = 12;
-int Motor_Right_Pin_PWM = 10;
-int Motor_Right_Pin_Direction = 9;
+int Motor_Left_Pin_PWM = 10;
+int Motor_Left_Pin_Direction = 11;
+int Motor_Right_Pin_PWM = 9;
+int Motor_Right_Pin_Direction = 8;
 
 //Signed PWM values for each motor
 int Motor_Left_Value = 0;
@@ -36,6 +36,12 @@ void setup()
 
     pinMode(BT_TX, OUTPUT);
     pinMode(BT_RX, INPUT);
+
+    //Make sure on-time is long enough for stand still -> low speed changes
+    //Frequency is set to 31250 / 256 = 122,07 hz
+    //31250 = Base frequency of pin 10 and 9
+    //0x04 selects divisor of 256
+    TCCR1B = TCCR1B & 0b11111000 | 0x04;
 
     //Begin bluetooth serial connection
     bluetooth.begin(9600);
