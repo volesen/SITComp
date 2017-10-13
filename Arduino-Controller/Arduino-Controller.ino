@@ -4,14 +4,17 @@
 //Look into these, brake might need to be pulled low
 
 //Motor control pins
-int Motor_Left_Pin_PWM = 6;
-int Motor_Left_Pin_Direction = 7;
-int Motor_Right_Pin_PWM = 5;
-int Motor_Right_Pin_Direction = 4;
+int Motor_Left_Pin_PWM = 11;
+int Motor_Left_Pin_Direction = 12;
+int Motor_Right_Pin_PWM = 10;
+int Motor_Right_Pin_Direction = 9;
 
 //Signed PWM values for each motor
 int Motor_Left_Value = 0;
 int Motor_Right_Value = 0;
+
+int Motor_Left_CurrentValue = 0;
+int Motor_Right_CurrentValue = 0;
 
 //Communication pins
 int BT_TX = 2;
