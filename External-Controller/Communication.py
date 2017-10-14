@@ -15,8 +15,8 @@ class BluetoothSerial(object):
         self.WRITE_TIMEOUT = 0.2
         
         self.com = serial.Serial()
-        self.com.port = port 			#"COM3"
-        self.com.baudrate = baudrate 	#9600
+        self.com.port = port            #"COM3"
+        self.com.baudrate = baudrate    #9600
 
     def open(self):
         self.com.open()
