@@ -35,13 +35,13 @@ class HUD(Forms.Form):
         self.Input_Boost = False
 
     def OnKeyDownEvent(self, sender, e):
-        if e.KeyCode == Forms.Keys.R:
+        if e.KeyCode == Forms.Keys.W:
             self.Input_Up = True
-        elif e.KeyCode == Forms.Keys.F:
+        elif e.KeyCode == Forms.Keys.S:
             self.Input_Down = True
-        elif e.KeyCode == Forms.Keys.D:
+        elif e.KeyCode == Forms.Keys.A:
             self.Input_Left = True
-        elif e.KeyCode == Forms.Keys.G:
+        elif e.KeyCode == Forms.Keys.D:
             self.Input_Right = True
         elif e.KeyCode == Forms.Keys.Space:
             self.Input_Boost = True
@@ -52,13 +52,13 @@ class HUD(Forms.Form):
         e.Handled = True
     
     def OnKeyUpEvent(self, sender, e):
-        if e.KeyCode == Forms.Keys.R:
+        if e.KeyCode == Forms.Keys.W:
             self.Input_Up = False
-        elif e.KeyCode == Forms.Keys.F:
+        elif e.KeyCode == Forms.Keys.S:
             self.Input_Down = False
-        elif e.KeyCode == Forms.Keys.D:
+        elif e.KeyCode == Forms.Keys.A:
             self.Input_Left = False
-        elif e.KeyCode == Forms.Keys.G:
+        elif e.KeyCode == Forms.Keys.D:
             self.Input_Right = False
         elif e.KeyCode == Forms.Keys.Space:
             self.Input_Boost = False
@@ -131,7 +131,7 @@ while window.Visible:
                                             window.Input_Left, 
                                             window.Input_Right,
                                             speed_scaler)
-
+    print(motor_signal)
     com.send_motor_signal(motor_signal)
     
 
