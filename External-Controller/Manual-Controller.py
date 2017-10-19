@@ -1,4 +1,5 @@
 from Communication import BluetoothSerial
+from time import sleep
 
 #Yes, I know the following imports tie it to Windows
 #This is for the manual part. Consistent speed isn't important here. This is fast enough.
@@ -124,14 +125,15 @@ while window.Visible:
     if window.Input_Boost:
         speed_scaler = 1
     else:
-        speed_scaler = 0.6
+        speed_scaler = 0.3
 
     motor_signal = controls_to_motor_signal(window.Input_Up, 
                                             window.Input_Down, 
                                             window.Input_Left, 
                                             window.Input_Right,
                                             speed_scaler)
-    print(motor_signal)
+
+    sleep(0.016)
     com.send_motor_signal(motor_signal)
     
 
