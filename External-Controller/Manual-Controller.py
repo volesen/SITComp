@@ -1,4 +1,5 @@
 from Communication import BluetoothSerial
+from time import sleep
 
 #Yes, I know the following imports tie it to Windows
 #This is for the manual part. Consistent speed isn't important here. This is fast enough.
@@ -35,13 +36,13 @@ class HUD(Forms.Form):
         self.Input_Boost = False
 
     def OnKeyDownEvent(self, sender, e):
-        if e.KeyCode == Forms.Keys.R:
+        if e.KeyCode == Forms.Keys.W:
             self.Input_Up = True
-        elif e.KeyCode == Forms.Keys.F:
+        elif e.KeyCode == Forms.Keys.S:
             self.Input_Down = True
-        elif e.KeyCode == Forms.Keys.D:
+        elif e.KeyCode == Forms.Keys.A:
             self.Input_Left = True
-        elif e.KeyCode == Forms.Keys.G:
+        elif e.KeyCode == Forms.Keys.D:
             self.Input_Right = True
         elif e.KeyCode == Forms.Keys.Space:
             self.Input_Boost = True
@@ -52,13 +53,13 @@ class HUD(Forms.Form):
         e.Handled = True
     
     def OnKeyUpEvent(self, sender, e):
-        if e.KeyCode == Forms.Keys.R:
+        if e.KeyCode == Forms.Keys.W:
             self.Input_Up = False
-        elif e.KeyCode == Forms.Keys.F:
+        elif e.KeyCode == Forms.Keys.S:
             self.Input_Down = False
-        elif e.KeyCode == Forms.Keys.D:
+        elif e.KeyCode == Forms.Keys.A:
             self.Input_Left = False
-        elif e.KeyCode == Forms.Keys.G:
+        elif e.KeyCode == Forms.Keys.D:
             self.Input_Right = False
         elif e.KeyCode == Forms.Keys.Space:
             self.Input_Boost = False
@@ -124,7 +125,7 @@ while window.Visible:
     if window.Input_Boost:
         speed_scaler = 1
     else:
-        speed_scaler = 0.6
+        speed_scaler = 0.3
 
     motor_signal = controls_to_motor_signal(window.Input_Up, 
                                             window.Input_Down, 
@@ -132,6 +133,7 @@ while window.Visible:
                                             window.Input_Right,
                                             speed_scaler)
 
+    sleep(0.016)
     com.send_motor_signal(motor_signal)
     
 
