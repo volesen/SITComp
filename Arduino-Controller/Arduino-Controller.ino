@@ -4,10 +4,10 @@
 //Look into these, brake might need to be pulled low
 
 //Constants
-// //Quadratic acceleration
-// float Acceleration_Factor = 24000;
-//Linear acceleration
-float Acceleration_Constant = 0.6;
+
+//Constant acceleration
+float Acceleration_Constant = 4.0;
+float Acceleration_Brake_Constant = 8.2; //4.6
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
@@ -67,10 +67,12 @@ void loop()
     Apply_MotorValues();
 
     analogWrite(Auxiliary_Pin, Auxiliary_Value);
-    //Serial.println(Auxiliary_Value);
-    // Serial.print(Motor_Left_CurrentValue);
-    // Serial.print(",");
-    // Serial.println(Motor_Right_CurrentValue);
+    // Serial.println(Auxiliary_Value);
+
+    //For some reason bluetooth connection is lost after a few seconds if this isn't here
+    Serial.print(Motor_Left_CurrentValue);
+    Serial.print(",");
+    Serial.println(Motor_Right_CurrentValue);
 }
 
 #pragma region Motor speed
@@ -83,19 +85,20 @@ void Update_MotorValues()
 
 float Calculate_Value(int value, float currentValue)
 {
-    //Linear acceleration
-    if (abs(currentValue - value) < Acceleration_Constant)
-        return value;
+    float ValueDelta = (float)value - currentValue;
+
+    //Figure out if braking
+    bool Braking = ValueDelta <= 0;
+    if (currentValue < 0)
+        Braking = !Braking;
+
+    //Constant can overshoot PWM value
+    if (abs(ValueDelta) < (Braking ? Acceleration_Brake_Constant : Acceleration_Constant))
+        return value; //Snap to desired PWM value
+    else if (Braking)
+        return (currentValue < 0 ? Acceleration_Brake_Constant : -Acceleration_Brake_Constant) + currentValue;
     else
-        return (value - currentValue > 0 ? 1 : -1) * Acceleration_Constant + currentValue;
-    
-    // //Quadratic acceleration
-    // float ValueDelta = (float)value - currentValue;
-    
-    // if (abs(ValueDelta) < 10) //To evade division by zero
-    //     return (float)value;
-    // else
-    //     return (ValueDelta > 0 ? 1 : -1) * Acceleration_Factor * pow(ValueDelta, -2) + currentValue;
+        return (currentValue < 0 ? -Acceleration_Constant : Acceleration_Constant) + currentValue;
 }
 
 void Apply_MotorValues()

@@ -142,6 +142,7 @@ while window.Visible:
         aux_signal = 0
 
     sleep(0.016)
+    
     com.send_motor_signal(motor_signal, aux_signal)
     
 
