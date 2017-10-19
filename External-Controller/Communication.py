@@ -24,7 +24,7 @@ class BluetoothSerial(object):
     def close(self):
         self.com.close()
 
-    def send_motor_signal(self, signal):
+    def send_motor_signal(self, signal, auxiliary):
         if not self.com.is_open:
             raise ConnectionError("Cannot send signal when communication is closed. Call open() to open communication.")
         else:
@@ -38,12 +38,14 @@ class BluetoothSerial(object):
                 motor_right_signal = "+" + motor_right_signal
             
             #Encode and send PWM values
-            self.com.write("({!s},{!s})".format(motor_left_signal, 
-                                                motor_right_signal)
-                                        .encode("ascii"))
+            self.com.write("({!s},{!s},{!s})".format(motor_left_signal, 
+                                                     motor_right_signal,
+                                                     auxiliary)
+                                             .encode("ascii"))
 
     def get_battery_voltage(self):
         #This function must not take long
         #Always keep a voltage value in memory together with time since previous update
         #this function should then return the locally saved voltage value
         raise NotImplementedError()
+        
