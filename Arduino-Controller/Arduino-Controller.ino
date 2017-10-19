@@ -3,6 +3,9 @@
 //Motor brake and current sensing pins
 //Look into these, brake might need to be pulled low
 
+//Constants
+float Acceleration_Factor = 0.000004;
+
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
 int Motor_Left_Pin_Direction = 11;
@@ -13,12 +16,12 @@ int Motor_Right_Pin_Direction = 8;
 int Motor_Left_Value = 0;
 int Motor_Right_Value = 0;
 
-int Motor_Left_CurrentValue = 0;
-int Motor_Right_CurrentValue = 0;
+float Motor_Left_CurrentValue = 0;
+float Motor_Right_CurrentValue = 0;
 
 //Communication pins
-int BT_TX = 2;
-int BT_RX = 3;
+int BT_TX = 2; //Yellow from BT goes here
+int BT_RX = 3; //Green from BT goes here
 
 SoftwareSerial bluetooth(BT_RX, BT_TX);
 
@@ -50,6 +53,7 @@ void setup()
 
 void loop() 
 {
+    Receive_MotorValues();
     Update_MotorValues();
     Apply_MotorValues();
     
@@ -60,15 +64,27 @@ void loop()
 }
 
 #pragma region Motor speed
+void Update_MotorValues() 
+{
+    Motor_Left_CurrentValue = Adjust_Value(Motor_Left_Value, Motor_Left_CurrentValue);
+
+    Motor_Right_CurrentValue = Adjust_Value(Motor_Right_Value, Motor_Right_CurrentValue);
+}
+
+float Adjust_Value(int value, float currentValue)
+{
+    return (value - currentValue ? 1 : -1) * Acceleration_Factor * pow(value - currentValue, 2) + currentValue;
+}
+
 void Apply_MotorValues()
 {
     Apply_MotorValue(Motor_Left_Pin_PWM,
                      Motor_Left_Pin_Direction,
-                     Motor_Left_Value);
+                     (int)Motor_Left_CurrentValue);
 
     Apply_MotorValue(Motor_Right_Pin_PWM,
                      Motor_Right_Pin_Direction,
-                     Motor_Right_Value);
+                     (int)Motor_Right_CurrentValue);
 }
 
 void Apply_MotorValue(int pin_PWM, int pin_Direction, int value)
@@ -93,7 +109,7 @@ String Received = "";
 ///<returns>
 ///true if valid command found. false if no command found in whole buffer.
 ///</returns>
-bool Update_MotorValues()
+bool Receive_MotorValues()
 {
     while (bluetooth.available() > 0)
     {
