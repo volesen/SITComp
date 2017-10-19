@@ -95,6 +95,19 @@ class Controller(object):
             return [255, 255 + scaler*255]
 
     #region - Helper functions
+    def centerpoint_from_markercorners(corners):
+        x = corners[0][0] + 0.5 * (corners[2][0] - corners[0][0])
+        y = corners[0][1] + 0.5 * (corners[2][1] - corners[0][1])
+        
+        return [x, y]
+
+    def angle_from_markercorners(corners):
+        x = corners[1][0] - corners[2][0]
+        y = corners[1][0] - corners[2][0]
+
+        return math.degrees(math.atan(y / x))
+
+
     def transform_image_position_to_map(self, image_position, image_width, image_height):
         map_x = image_position[0] / image_width * self.MAP_WIDTH
         map_y = image_position[1] / image_height * self.MAP_HEIGHT
