@@ -34,6 +34,7 @@ class HUD(Forms.Form):
         self.Input_Left = False
         self.Input_Right = False
         self.Input_Boost = False
+        self.Input_Magnet = False
 
     def OnKeyDownEvent(self, sender, e):
         if e.KeyCode == Forms.Keys.W:
@@ -46,7 +47,9 @@ class HUD(Forms.Form):
             self.Input_Right = True
         elif e.KeyCode == Forms.Keys.Space:
             self.Input_Boost = True
-        
+        elif e.KeyCode == Forms.Keys.V:
+            self.Input_Magnet = not self.Input_Magnet
+
         elif e.KeyCode == Forms.Keys.Escape:
             self.Close()
 
@@ -133,8 +136,13 @@ while window.Visible:
                                             window.Input_Right,
                                             speed_scaler)
 
+    if window.Input_Magnet:
+        aux_signal = 255
+    else:
+        aux_signal = 0
+
     sleep(0.016)
-    com.send_motor_signal(motor_signal)
+    com.send_motor_signal(motor_signal, aux_signal)
     
 
 if not window.IsDisposed:

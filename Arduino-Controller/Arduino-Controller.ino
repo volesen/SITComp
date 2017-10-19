@@ -7,13 +7,13 @@
 //Quadratic acceleration
 // float Acceleration_Factor = 2000;
 //Linear acceleration
-float Acceleration_Constant = 2.4;
+float Acceleration_Constant = 2.2;
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
 int Motor_Left_Pin_Direction = 11;
 int Motor_Right_Pin_PWM = 9;
-int Motor_Right_Pin_Direction = 8;
+int Motor_Right_Pin_Direction = 12;
 
 //Signed PWM values for each motor
 int Motor_Left_Value = 0;
@@ -21,6 +21,10 @@ int Motor_Right_Value = 0;
 
 float Motor_Left_CurrentValue = 0;
 float Motor_Right_CurrentValue = 0;
+
+//Auxiliary data pin
+int Auxiliary_Pin = 5;
+int Auxiliary_Value = 0;
 
 //Communication pins
 int BT_TX = 2; //Yellow from BT goes here
@@ -39,6 +43,8 @@ void setup()
     pinMode(Motor_Left_Pin_Direction, OUTPUT);
     pinMode(Motor_Right_Pin_PWM, OUTPUT);
     pinMode(Motor_Right_Pin_Direction, OUTPUT);
+
+    pinMode(Auxiliary_Pin, OUTPUT);
 
     pinMode(BT_TX, OUTPUT);
     pinMode(BT_RX, INPUT);
@@ -59,8 +65,9 @@ void loop()
     Receive_MotorValues();
     Update_MotorValues();
     Apply_MotorValues();
-    
 
+    analogWrite(Auxiliary_Pin, Auxiliary_Value);
+    //Serial.println(Auxiliary_Value);
     // Serial.print(Motor_Left_CurrentValue);
     // Serial.print(",");
     // Serial.println(Motor_Right_CurrentValue);
@@ -129,7 +136,7 @@ bool Receive_MotorValues()
     while (bluetooth.available() > 0)
     {
         if ((Received.length() == 1 && Received.charAt(0) != '(') ||
-            Received.length() > 10)
+            Received.length() > 14)
             Received = ""; //Invalid input was prevented
 
 
@@ -141,22 +148,28 @@ bool Receive_MotorValues()
         {
             Received += (char)bluetooth.read();
             
-            if (Received.length() > 6 && Received.length() < 12)
+            //Check if Received is within minimum valid length and maximum valid length
+            if (Received.length() > 8 && Received.length() < 16)
             {
                 //Find comma separator (-1 if not found)
-                int Separator_Location = Received.indexOf(',');
-                
+                int Separator_Motor_Location = Received.indexOf(',');
+                int Separator_Aux_Location = Received.indexOf(',', Separator_Motor_Location + 3);
+
                 //Make sure Seperator exists and exists within expected range
-                if (Separator_Location > 2 && Separator_Location < 6)
+                if (Separator_Motor_Location > 2 && Separator_Motor_Location < 6 &&
+                    Separator_Aux_Location != -1 && Separator_Aux_Location < Separator_Motor_Location + 6)
                 {
                     //This is not 100% safe.
                     //Not a full check of Received. Invalid input can still exist.
                     //Not writing full check unless we see that invalid input happens often.
 
                     //If bad input makes it here, motor values will be set to zero
-                    Motor_Left_Value = Received.substring(1, Separator_Location).toInt();
-                    Motor_Right_Value = Received.substring(Separator_Location + 1, Received.length() - 1).toInt();
+                    Motor_Left_Value = Received.substring(1, Separator_Motor_Location).toInt();
+                    Motor_Right_Value = Received.substring(Separator_Motor_Location + 1, Separator_Aux_Location).toInt();
                     
+                    //No protection against negative values - Will read negative value as correct
+                    Auxiliary_Value = Received.substring(Separator_Aux_Location + 1, Received.length() - 1).toInt();
+
                     Received = "";
 
                     return true;
