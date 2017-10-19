@@ -67,7 +67,7 @@ void loop()
     Apply_MotorValues();
 
     analogWrite(Auxiliary_Pin, Auxiliary_Value);
-    //Serial.println(Auxiliary_Value);
+    // Serial.println(Auxiliary_Value);
     // Serial.print(Motor_Left_CurrentValue);
     // Serial.print(",");
     // Serial.println(Motor_Right_CurrentValue);
