@@ -4,10 +4,10 @@
 //Look into these, brake might need to be pulled low
 
 //Constants
-// //Quadratic acceleration
-// float Acceleration_Factor = 24000;
+
 //Linear acceleration
-float Acceleration_Constant = 0.6;
+float Acceleration_Constant = 0.2;
+float Acceleration_Break_Constant = 0.8;
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
@@ -64,13 +64,13 @@ void loop()
 {
     Receive_MotorValues();
     Update_MotorValues();
-    Apply_MotorValues();
+    //Apply_MotorValues();
 
     analogWrite(Auxiliary_Pin, Auxiliary_Value);
     // Serial.println(Auxiliary_Value);
-    // Serial.print(Motor_Left_CurrentValue);
-    // Serial.print(",");
-    // Serial.println(Motor_Right_CurrentValue);
+    Serial.print(Motor_Left_CurrentValue);
+    Serial.print(",");
+    Serial.println(Motor_Right_CurrentValue);
 }
 
 #pragma region Motor speed
@@ -84,18 +84,13 @@ void Update_MotorValues()
 float Calculate_Value(int value, float currentValue)
 {
     //Linear acceleration
-    if (abs(currentValue - value) < Acceleration_Constant)
+    float ValueDelta = (float)value - currentValue;
+
+    if ((ValueDelta > 0 && abs(ValueDelta) < Acceleration_Constant) ||
+        (ValueDelta <= 0 && abs(ValueDelta) < Acceleration_Break_Constant))
         return value;
     else
-        return (value - currentValue > 0 ? 1 : -1) * Acceleration_Constant + currentValue;
-    
-    // //Quadratic acceleration
-    // float ValueDelta = (float)value - currentValue;
-    
-    // if (abs(ValueDelta) < 10) //To evade division by zero
-    //     return (float)value;
-    // else
-    //     return (ValueDelta > 0 ? 1 : -1) * Acceleration_Factor * pow(ValueDelta, -2) + currentValue;
+        return (ValueDelta > 0 ? Acceleration_Constant : -Acceleration_Break_Constant) + currentValue;
 }
 
 void Apply_MotorValues()
