@@ -4,10 +4,10 @@
 //Look into these, brake might need to be pulled low
 
 //Constants
-//Quadratic acceleration
-// float Acceleration_Factor = 2000;
+// //Quadratic acceleration
+// float Acceleration_Factor = 24000;
 //Linear acceleration
-float Acceleration_Constant = 2.2;
+float Acceleration_Constant = 0.6;
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
@@ -89,7 +89,7 @@ float Calculate_Value(int value, float currentValue)
     else
         return (value - currentValue > 0 ? 1 : -1) * Acceleration_Constant + currentValue;
     
-    //Quadratic acceleration
+    // //Quadratic acceleration
     // float ValueDelta = (float)value - currentValue;
     
     // if (abs(ValueDelta) < 10) //To evade division by zero
