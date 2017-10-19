@@ -4,7 +4,10 @@
 //Look into these, brake might need to be pulled low
 
 //Constants
-float Acceleration_Factor = 0.000004;
+//Quadratic acceleration
+// float Acceleration_Factor = 2000;
+//Linear acceleration
+float Acceleration_Constant = 2.4;
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
@@ -26,7 +29,7 @@ int BT_RX = 3; //Green from BT goes here
 SoftwareSerial bluetooth(BT_RX, BT_TX);
 
 
-void setup() 
+void setup()
 {
     //TODO: Remove the following line, it is for debugging
     Serial.begin(9600);
@@ -57,23 +60,35 @@ void loop()
     Update_MotorValues();
     Apply_MotorValues();
     
-    
-    // Serial.print(Motor_Left_Value);
+
+    // Serial.print(Motor_Left_CurrentValue);
     // Serial.print(",");
-    // Serial.println(Motor_Right_Value);
+    // Serial.println(Motor_Right_CurrentValue);
 }
 
 #pragma region Motor speed
 void Update_MotorValues() 
 {
-    Motor_Left_CurrentValue = Adjust_Value(Motor_Left_Value, Motor_Left_CurrentValue);
-
-    Motor_Right_CurrentValue = Adjust_Value(Motor_Right_Value, Motor_Right_CurrentValue);
+    Motor_Left_CurrentValue = Calculate_Value(Motor_Left_Value, Motor_Left_CurrentValue);
+    
+    Motor_Right_CurrentValue = Calculate_Value(Motor_Right_Value, Motor_Right_CurrentValue);
 }
 
-float Adjust_Value(int value, float currentValue)
+float Calculate_Value(int value, float currentValue)
 {
-    return (value - currentValue ? 1 : -1) * Acceleration_Factor * pow(value - currentValue, 2) + currentValue;
+    //Linear acceleration
+    if (abs(currentValue - value) < Acceleration_Constant)
+        return value;
+    else
+        return (value - currentValue > 0 ? 1 : -1) * Acceleration_Constant + currentValue;
+    
+    //Quadratic acceleration
+    // float ValueDelta = (float)value - currentValue;
+    
+    // if (abs(ValueDelta) < 10) //To evade division by zero
+    //     return (float)value;
+    // else
+    //     return (ValueDelta > 0 ? 1 : -1) * Acceleration_Factor * pow(ValueDelta, -2) + currentValue;
 }
 
 void Apply_MotorValues()

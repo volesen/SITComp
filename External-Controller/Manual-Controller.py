@@ -67,7 +67,7 @@ class HUD(Forms.Form):
         e.Handled = True
 
     def OnClosingEvent(self, sender, e):
-        pass
+        pass    
 
 
 def controls_to_motor_signal(up, down, left, right, speed_scaler = 0.6):
