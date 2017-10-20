@@ -6,8 +6,8 @@
 //Constants
 
 //Constant acceleration
-float Acceleration_Constant = 4.0;
-float Acceleration_Brake_Constant = 8.2; //4.6
+float Acceleration_Constant = 16.1; //4.8
+float Acceleration_Brake_Constant = 22.1; //9.21
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
