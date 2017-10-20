@@ -4,17 +4,10 @@
 //Look into these, brake might need to be pulled low
 
 //Constants
-<<<<<<< HEAD
-// //Quadratic acceleration
-// float Acceleration_Factor = 24000;
-//Linear acceleration
-float Acceleration_Constant = 0.6;
-=======
 
 //Constant acceleration
 float Acceleration_Constant = 16.1; //4.8
 float Acceleration_Brake_Constant = 22.1; //9.21
->>>>>>> dynamic_acceleration
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
@@ -105,19 +98,7 @@ float Calculate_Value(int value, float currentValue)
     else if (Braking)
         return (currentValue < 0 ? Acceleration_Brake_Constant : -Acceleration_Brake_Constant) + currentValue;
     else
-<<<<<<< HEAD
-        return (value - currentValue > 0 ? 1 : -1) * Acceleration_Constant + currentValue;
-    
-    // //Quadratic acceleration
-    // float ValueDelta = (float)value - currentValue;
-    
-    // if (abs(ValueDelta) < 10) //To evade division by zero
-    //     return (float)value;
-    // else
-    //     return (ValueDelta > 0 ? 1 : -1) * Acceleration_Factor * pow(ValueDelta, -2) + currentValue;
-=======
         return (currentValue < 0 ? -Acceleration_Constant : Acceleration_Constant) + currentValue;
->>>>>>> dynamic_acceleration
 }
 
 void Apply_MotorValues()
