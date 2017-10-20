@@ -6,8 +6,10 @@
 //Constants
 
 //Constant acceleration
-float Acceleration_Constant = 16.1; //4.8
-float Acceleration_Brake_Constant = 22.1; //9.21
+float Acceleration_Move_Minimum = 14;
+float Acceleration_Move_Snap = 34;
+float Acceleration_Brake_Minimum = 20;
+float Acceleration_Brake_Snap = 46;
 
 //Motor control pins
 int Motor_Left_Pin_PWM = 10;
@@ -92,13 +94,33 @@ float Calculate_Value(int value, float currentValue)
     if (currentValue < 0)
         Braking = !Braking;
 
-    //Constant can overshoot PWM value
-    if (abs(ValueDelta) < (Braking ? Acceleration_Brake_Constant : Acceleration_Constant))
-        return value; //Snap to desired PWM value
-    else if (Braking)
-        return (currentValue < 0 ? Acceleration_Brake_Constant : -Acceleration_Brake_Constant) + currentValue;
+    float Acceleration = Braking ? -Calculate_Acceleration(valueDelta, Acceleration_Brake_Snap, Acceleration_Brake_Minimum) :
+                                    Calculate_Acceleration(valueDelta, Acceleration_Move_Snap, Acceleration_Move_Minimum);
+
+    if (currentValue < 0)
+        Acceleration = -Acceleration;
+
+    return Acceleration + currentValue;
+}
+
+float Calculate_Acceleration(float valueDelta, float snapLimit, float minimumAcceleration)
+{
+    //PWM acceleration is given by: Acceleration = SnapFactor / valueDelta^2 + minimumAcceleration
+    //Small corrections are easy to do and therefore can be done fast
+    //Large corrections must usually be done with constant acceleration (asymptote minimumAcceleration)
+    //NOTE: When accelerating from 0 to 255, remember that valueDelta decreases as speed is picked up -> Acceleration increases
+    //NOTE: Assuming snapLimit > minimumAcceleration
+    
+    valueDelta = abs(valueDelta);
+
+    //Prevents division by zero and overshooting of desired value
+    if (valueDelta <= snapLimit || valueDelta <= minimumAcceleration)
+        return valueDelta;
     else
-        return (currentValue < 0 ? -Acceleration_Constant : Acceleration_Constant) + currentValue;
+        //SnapFactor makes sure acceleration graph intersects at snapLimit.
+        //SnapFactor = (snapLimit - minimumAcceleration) * snapLimit^2
+        //Basically just solves for SnapFactor in the equation at the start where Acceleration and valueDelta are set to snapLimit
+        return (snapLimit - minimumAcceleration) * (snapLimit*snapLimit) / (valueDelta*valueDelta) + minimumAcceleration;
 }
 
 void Apply_MotorValues()
