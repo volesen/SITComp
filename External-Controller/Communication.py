@@ -1,3 +1,4 @@
+#pip install pyserial
 import serial
 
 # import bluetooth
