@@ -128,7 +128,7 @@ while window.Visible:
     if window.Input_Boost:
         speed_scaler = 1
     else:
-        speed_scaler = 0.3
+        speed_scaler = 0.50
 
     motor_signal = controls_to_motor_signal(window.Input_Up, 
                                             window.Input_Down, 
@@ -142,6 +142,7 @@ while window.Visible:
         aux_signal = 0
 
     sleep(0.016)
+    
     com.send_motor_signal(motor_signal, aux_signal)
     
 
