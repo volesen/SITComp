@@ -57,7 +57,7 @@ void setup()
 
     //Begin bluetooth serial connection
     bluetooth.begin(9600);
-    bluetooth.setTimeout(200);
+    bluetooth.setTimeout(800);
 }
 
 void loop() 
@@ -69,10 +69,13 @@ void loop()
     analogWrite(Auxiliary_Pin, Auxiliary_Value);
     // Serial.println(Auxiliary_Value);
 
-    //For some reason bluetooth connection is lost after a few seconds if this isn't here
-    Serial.print(Motor_Left_CurrentValue);
-    Serial.print(",");
-    Serial.println(Motor_Right_CurrentValue);
+    //Um, could be caused by bt module being 3.3v in regards to logic... need to check
+    //probably should implement reconnect feature on manual communication though
+    //could be caused by sudden low voltage on bluetooth module when we wind up motors? put in capacitor? some people had problems when U > 9 V
+    //For some reason bluetooth connection is lost after a few seconds if this isn't here. I just commented it out. Rip
+    // Serial.print(Motor_Left_CurrentValue);
+    // Serial.print(",");
+    // Serial.println(Motor_Right_CurrentValue);
 }
 
 #pragma region Motor speed
