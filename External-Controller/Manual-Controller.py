@@ -19,15 +19,91 @@ class HUD(Forms.Form):
     def InitializeComponent(self):
         self.SuspendLayout()
         
-        self.ClientSize = Drawing.Size(64, 64)
+        self.ClientSize = Drawing.Size(364, 222)
         self.FormBorderStyle = Forms.FormBorderStyle.FixedToolWindow
-        self.BackColor = Drawing.Color.GhostWhite
+        self.KeyPreview = True
+        self.BackColor = Drawing.Color.SlateGray
+
+        self.CreateInstructions()
+        self.CreateTrackBars()
+        self.CreateKeyInput()
+
+        self.ResumeLayout(False)
         
+
+    def CreateInstructions(self):
+        self.InstructionLabel = Forms.Label()
+        self.InstructionLabel.Location = Drawing.Point(52, 176)
+        self.InstructionLabel.Size = Drawing.Size(256, 354)
+        self.InstructionLabel.Font = Drawing.Font(Drawing.FontFamily("Lucida Console"), b'8')
+        self.InstructionLabel.ForeColor = Drawing.Color.GhostWhite
+        self.InstructionLabel.Text = "    V:   Toggle magnet\n WASD:   Movement\nSPACE:   Activate boost"
+
+        self.Controls.Add(self.InstructionLabel)
+
+
+    def CreateTrackBars(self):
+        #Create SpeedBar
+        self.SpeedBar = Forms.TrackBar()
+        self.SpeedBar.Location = Drawing.Point(8, 32)
+        self.SpeedBar.Size = Drawing.Size(240, 24)
+        self.SpeedBar.Maximum = 100
+        self.SpeedBar.Minimum = 0
+        self.SpeedBar.TickFrequency = 10
+        self.SpeedBar.Value = 35
+        
+        self.Speed = self.SpeedBar.Value / 100.0
+        self.SpeedBar.ValueChanged += self.OnSpeedChanged
+
+        self.Controls.Add(self.SpeedBar)
+
+        #Create SpeedBoostBar
+        self.SpeedBoostBar = Forms.TrackBar()
+        self.SpeedBoostBar.Location = Drawing.Point(8, 128)
+        self.SpeedBoostBar.Size = Drawing.Size(240, 24)
+        self.SpeedBoostBar.Maximum = 100
+        self.SpeedBoostBar.Minimum = 0
+        self.SpeedBoostBar.TickFrequency = 10
+        self.SpeedBoostBar.Value = 85
+
+        self.SpeedBoost = self.SpeedBoostBar.Value / 100.0
+        self.SpeedBoostBar.ValueChanged += self.OnSpeedChanged
+
+        self.Controls.Add(self.SpeedBoostBar)
+
+        #Create labels
+        self.SpeedLabel = Forms.Label()
+        self.SpeedLabel.Location = Drawing.Point(256, 8)
+        self.SpeedLabel.Size = Drawing.Size(128, 86)
+        self.SpeedLabel.Font = Drawing.Font(Drawing.FontFamily("Impact"), b'24')
+        self.SpeedLabel.ForeColor = Drawing.Color.GhostWhite
+        self.SpeedLabel.Text = "SPEED\n" + str(self.SpeedBar.Value)
+
+        self.Controls.Add(self.SpeedLabel)
+
+        self.SpeedBoostLabel = Forms.Label()
+        self.SpeedBoostLabel.Location = Drawing.Point(256, 104)
+        self.SpeedBoostLabel.Size = Drawing.Size(128, 86)
+        self.SpeedBoostLabel.Font = Drawing.Font(Drawing.FontFamily("Impact"), b'24')
+        self.SpeedBoostLabel.ForeColor = Drawing.Color.GhostWhite
+        self.SpeedBoostLabel.Text = "BOOST\n"+ str(self.SpeedBoostBar.Value)
+
+        self.Controls.Add(self.SpeedBoostLabel)
+
+    def OnSpeedChanged(self, sender, e):
+        self.Speed = self.SpeedBar.Value / 100.0
+        self.SpeedBoost = self.SpeedBoostBar.Value / 100.0
+        
+        self.SpeedLabel.Text = "SPEED\n" + str(self.SpeedBar.Value)
+        self.SpeedBoostLabel.Text = "BOOST\n" + str(self.SpeedBoostBar.Value)
+
+        e.Handled = True
+
+
+    def CreateKeyInput(self):
         self.KeyDown += self.OnKeyDownEvent
         self.KeyUp += self.OnKeyUpEvent
         self.Closing += self.OnClosingEvent
-
-        self.ResumeLayout(False)
 
         self.Input_Up = False
         self.Input_Down = False
@@ -49,6 +125,10 @@ class HUD(Forms.Form):
             self.Input_Boost = True
         elif e.KeyCode == Forms.Keys.V:
             self.Input_Magnet = not self.Input_Magnet
+            if self.Input_Magnet:
+                self.BackColor = Drawing.Color.Crimson
+            else:
+                self.BackColor = Drawing.Color.SlateGray
 
         elif e.KeyCode == Forms.Keys.Escape:
             self.Close()
@@ -122,13 +202,14 @@ print("Connection established")
 window = HUD()
 window.Show()
 
+#Application loop
 while window.Visible:
     Forms.Application.DoEvents()
 
     if window.Input_Boost:
-        speed_scaler = 1
+        speed_scaler = window.SpeedBoost
     else:
-        speed_scaler = 0.50
+        speed_scaler = window.Speed
 
     motor_signal = controls_to_motor_signal(window.Input_Up, 
                                             window.Input_Down, 
@@ -140,7 +221,7 @@ while window.Visible:
         aux_signal = 255
     else:
         aux_signal = 0
-
+    
     sleep(0.016)
     
     com.send_motor_signal(motor_signal, aux_signal)
