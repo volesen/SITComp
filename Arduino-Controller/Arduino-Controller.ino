@@ -72,7 +72,10 @@ void loop()
     //Um, could be caused by bt module being 3.3v in regards to logic... need to check
     //probably should implement reconnect feature on manual communication though
     //could be caused by sudden low voltage on bluetooth module when we wind up motors? put in capacitor? some people had problems when U > 9 V
+    //Put a newline character at the end?
+    //Make sure input buffer on arduino is not filed
     //For some reason bluetooth connection is lost after a few seconds if this isn't here. I just commented it out. Rip
+    //remember pull down resistors for logic pins... or maybe we need voltage dividers on rx?
     // Serial.print(Motor_Left_CurrentValue);
     // Serial.print(",");
     // Serial.println(Motor_Right_CurrentValue);
