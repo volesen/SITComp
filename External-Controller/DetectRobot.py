@@ -34,7 +34,7 @@ class DetectRobot(object):
 		Return:
 			none
 		"""
-		coeff = np.load('cameraCalibration.npz')
+		coeff = np.load(file)
 		self.camera_matrix = coeff['mtx']
 		self.dist = coeff['dist']
 
@@ -67,25 +67,60 @@ class DetectRobot(object):
 		undistorted_img = cv2.remap(img, self.map_x, self.map_y, cv2.INTER_LINEAR)
 		return undistorted_img
 
-	def get_corners(self, img, marker_id):
+	def detect_corners(self, marker_id):
 		"""
 		Detects and calculates position of an aruco marker
 
 		Args:
-			img: undistorted image
 			marker_id: id of aruco marker
 		Returns:
 			tuple: x position, y position, yaw
 		Raises:
 			NoDetction: no aruco marker detected
 		"""
-		img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # aruco.detectMarkers() requires a greyscale image
+		# get current frame
+		distorted_img = self.camera.get_img()
+
+		#undistort image
+		img = self.undistort(distorted_img)
+
+		# convert to greyscale (aruco.detectMarkers() requires a greyscale image)
+		img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+
+		# detect corners
 		corners, ids, rejected_points = aruco.detectMarkers(img_grey, self.aruco_dict, parameters = self.aruco_params)
-		
-		if ids is not None: # runtime error
-			return corners
+
+		if ids is not None:
+			if np.any(ids == marker_id):
+
+				# find index of marker_id in ids
+				marker_index = np.nonzero(ids == marker_id)[0][0]
+
+				# return corner of marker_id'th marker
+				return corners[marker_index][0]
+			else:
+				raise Exception('DetectionError')
 		else:
 			raise Exception('DetectionError')
+
+	def detect_position_angle(self, marker_id):
+
+		# get corners
+		corners = self.detect_corners(marker_id)
+
+		# perspective transform corners
+		transformed_corner = self.transform.transform_corners(corners)
+
+		#calculate center of aruco marker
+		center = transformed_corner[0] + 0.5 * (transformed_corner[2] - transformed_corner[0])
+
+		#calculate direction vector
+		angle = transformed_corner[1] - transformed_corner[2]
+
+		#calculate angle between x-axis and the direction vector in the interval [-pi, pi]
+		angle = np.degrees(np.arctan2(angle[1], angle[0]))
+
+		return (center, angle)
 
 	def return_aruco_marker(self, n, length):
 		"""

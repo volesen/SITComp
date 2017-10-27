@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import math
 
 class Transform(object):
 	"""Takes camera coordinates and transforms them to birds eye view for a defined rectangle"""
@@ -20,7 +21,7 @@ class Transform(object):
 		cv2.namedWindow('Init')
 		cv2.setMouseCallback('Init', self.set_point)
 
-		# define ROI
+		# define corners of ROI when clicked
 		while len(self.points) < 4:
 			cv2.imshow('Init', img)
 			if cv2.waitKey(20) & 0xFF == 27: # Close window on 'Esc'
@@ -31,8 +32,8 @@ class Transform(object):
 		self.M = self.set_perspective_transform(img, self.points)
 		
 		self.scale = np.array([
-			self.track_width / self.dst_width,
-			self.track_height / self.dst_height])
+			[self.track_width / self.dst_width, 0],
+			[0, self.track_height / self.dst_height]])
 
 	def set_point(self, event, x, y, flags, param):
 		"""
@@ -68,8 +69,8 @@ class Transform(object):
 		rect[0] = pts[np.argmin(s)]
 		rect[2] = pts[np.argmax(s)]
 	 
-		# now, compute the difference between the points, the
-		# top-right point will have the smallest difference,
+		# compute the difference between the points,
+		# the top-right point will have the smallest difference,
 		# whereas the bottom-left will have the largest difference
 		diff = np.diff(pts, axis = 1)
 		rect[1] = pts[np.argmin(diff)]
@@ -83,8 +84,7 @@ class Transform(object):
 		# individually
 		rect = self.order_points(pts)
 		(tl, tr, br, bl) = rect
-	 	
-	 	# compute 
+		
 		# compute the width of the new image, which will be the
 		# maximum distance between bottom-right and bottom-left
 		# x-coordiates or the top-right and top-left x-coordinates
@@ -94,8 +94,8 @@ class Transform(object):
 		# maximum distance between the top-right and bottom-right
 		# y-coordinates or the top-left and bottom-left y-coordinates
 		self.dst_height = int(max(np.linalg.norm(tr-br), np.linalg.norm(tl-bl)))
-	 	
-	 	# define corners of the ROI, after perspective transform (clockwise)
+		
+		# define corners of the ROI, after perspective transform (clockwise)
 		dst = np.array([
 			[0, 0],
 			[self.dst_width, 0],
@@ -107,11 +107,36 @@ class Transform(object):
 
 		return perspective_transform_matrix
 
-	def transform_point(self, point):
-		point_prime = np.matmul(self.M, point) # transform of point with perspective transform matrix
-		point_prime = np.divide(point_prime[:-1], point_prime[-1]) # divide the x,y-coordinates by the last coordinate
-		return point_prime
+	def transform_corners(self, points):
+		# append third dimmension, z = 1, to all points
+		points = np.hstack([points, np.ones([4,1])])
 
-	def get_pos(self, point):
-		point = self.transform_point(point)
-		return np.multiply(point, self.scale)
+		# transform of points with the perspective transform matrix and transpose
+		transformed_points = np.matmul(points, self.M.T).T
+
+		# divide the x,y-coordinates by the z-coordinate and transpose
+		transformed_points = np.divide(transformed_points[:-1], transformed_points[-1]).T
+
+		# apply scale matrix
+		scaled_points = np.matmul(transformed_points, self.scale)
+
+		return scaled_points
+
+#	def transform_points(self, points):
+#		points_prime = np.matmul(self.M, points.T) # transform of point with perspective transform matrix
+#		points_prime = np.divide(points_prime[:-1], points_prime[-1]) # divide the x,y-coordinates by the z-coordinate
+#		return points_prime
+
+#	def get_pos(self, point):
+#		point = self.transform_point(point)
+#		return np.multiply(point, self.scale)
+
+
+#points_prime = np.matmul(self.M, points.T) # transform of point with perspective transform matrix
+#points_prime = np.divide(point_prime[:-1], point_prime[-1]) # divide the x,y-coordinates by the z-coordinate
+#transform = Transform(cv2.imread('test.jpg'), (1,1))
+#corner = np.asarray([[1,0],[0,1],[1,2],[1,2]]).T
+#corner = np.append(corner, np.ones(corner.shape[1]), axis=2)
+#print(corner)
+
+#print(transform.transform_points(corner))
