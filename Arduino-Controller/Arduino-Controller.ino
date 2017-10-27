@@ -70,19 +70,18 @@ void loop()
 
     analogWrite(Auxiliary_Pin, Auxiliary_Value);
     // Serial.println(Auxiliary_Value);
-
-    //For some reason bluetooth connection is lost after a few seconds if this isn't here
-    Serial.print(Motor_Left_CurrentValue);
-    Serial.print(",");
-    Serial.println(Motor_Right_CurrentValue);
 }
 
 #pragma region Motor speed
 void Update_MotorValues() 
 {
-    Motor_Left_CurrentValue = Calculate_Value(Motor_Left_Value, Motor_Left_CurrentValue);
+    // Motor_Left_CurrentValue = Calculate_Value(Motor_Left_Value, Motor_Left_CurrentValue);
     
-    Motor_Right_CurrentValue = Calculate_Value(Motor_Right_Value, Motor_Right_CurrentValue);
+    // Motor_Right_CurrentValue = Calculate_Value(Motor_Right_Value, Motor_Right_CurrentValue);
+
+    Motor_Left_CurrentValue = Motor_Left_Value;
+
+    Motor_Right_CurrentValue = Motor_Right_Value;
 }
 
 float Calculate_Value(int value, float currentValue)
@@ -94,8 +93,8 @@ float Calculate_Value(int value, float currentValue)
     if (currentValue < 0)
         Braking = !Braking;
 
-    float Acceleration = Braking ? -Calculate_Acceleration(valueDelta, Acceleration_Brake_Snap, Acceleration_Brake_Minimum) :
-                                    Calculate_Acceleration(valueDelta, Acceleration_Move_Snap, Acceleration_Move_Minimum);
+    float Acceleration = Braking ? -Calculate_Acceleration(ValueDelta, Acceleration_Brake_Snap, Acceleration_Brake_Minimum) :
+                                    Calculate_Acceleration(ValueDelta, Acceleration_Move_Snap, Acceleration_Move_Minimum);
 
     if (currentValue < 0)
         Acceleration = -Acceleration;

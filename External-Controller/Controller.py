@@ -1,6 +1,8 @@
 import math
 from DetectRobot import DetectRobot
 from Camera import Camera
+from Communication import BluetoothSerial
+
 
 class Controller(object):
     def __init__(self, deviation_insensitivity, clockwise_direction):
@@ -13,10 +15,10 @@ class Controller(object):
         #There are no protections in place for incorrect edge numbers i.e. "left" being higher 
         #than "right". Violation of these guidelines will potentially cause unexpected behavior
         self.REGION_EDGE = {
-            "top": 0.75,
-            "left": 0.75,
-            "bottom": 3.25,
-            "right": 6.25
+            "top": 1.5,
+            "left": 1.5,
+            "bottom": 2.5,
+            "right": 5.5
         }
 
         #This is NOT for proportional control
@@ -91,10 +93,10 @@ class Controller(object):
         #this is just a temporary hacky solution...
         #The two motor speeds (left_motor, right_motor)
         if scaler > 0:
-            return [255 - scaler*255, 255]
+            return [60 - scaler*60, 60]
         else: 
             #scaler is negative or zero so addition reduces value
-            return [255, 255 + scaler*255]
+            return [60, 60 + scaler*60]
 
     #region - Helper functions
     def centerpoint_from_markercorners(corners):
@@ -128,14 +130,15 @@ cam_dim = (1280, 720)
 cam = Camera(1, cam_dim)
 detector = DetectRobot(cam_dim, cam, (7, 4), "C:\Data\OneDrive - Syddansk Erhvervsskole\Current\Electronics\SITComp\External-Controller\cameraCalibration.npz")
 
-controller = Controller(200, False)
+controller = Controller(200, True)
+sender = BluetoothSerial("COM3", 9600)
 
 while True:
     try:
             position, angle = detector.detect_position_angle(marker_id)
             #print(angle + 180)
-            print(position)
-            #print(controller.get_motor_signal(angle + 180, position))
+            #print(position)
+            print(controller.get_motor_signal(angle + 180, position))
     except Exception as e:
         print(e)
 
