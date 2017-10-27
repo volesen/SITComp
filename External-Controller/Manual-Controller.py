@@ -130,7 +130,7 @@ while window.Visible:
     else:
         speed_scaler = 0.50
 
-    motor_signal = controls_to_motor_signal(window.Input_Up, 
+    motor_signal = controls_to_motor_signal(window.Input_Up,
                                             window.Input_Down, 
                                             window.Input_Left, 
                                             window.Input_Right,
