@@ -8,7 +8,7 @@ from PerspectiveTransform import Transform
 class DetectRobot(object):
 	"""Detect robot from camera input with aruco markers"""
 	
-	def __init__(self, dimmensions, camera, track_dim):
+	def __init__(self, dimmensions, camera, track_dim, file):
 		"""
 		Initializes a class instance
 
@@ -22,7 +22,9 @@ class DetectRobot(object):
 		self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
 		self.aruco_params = aruco.DetectorParameters_create()
 		self.camera = camera
-		self.transform = Transform(self.camera.get_img(), track_dim)
+		self.load_camera_coeff(file)
+		distorted_img = self.camera.get_img()
+		self.transform = Transform(self.undistort(distorted_img), track_dim)
 
 	def load_camera_coeff(self, file):
 		"""
