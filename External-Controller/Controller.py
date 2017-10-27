@@ -1,4 +1,6 @@
 import math
+from DetectRobot import DetectRobot
+from Camera import Camera
 
 class Controller(object):
     def __init__(self, deviation_insensitivity, clockwise_direction):
@@ -119,3 +121,22 @@ class Controller(object):
         return (angle + 90.0) % 360
 
     #endregion
+
+marker_id = 7
+cam_dim = (1280, 720)
+
+cam = Camera(1, cam_dim)
+detector = DetectRobot(cam_dim, cam, (7, 4), "C:\Data\OneDrive - Syddansk Erhvervsskole\Current\Electronics\SITComp\External-Controller\cameraCalibration.npz")
+
+controller = Controller(200, False)
+
+while True:
+    try:
+            position, angle = detector.detect_position_angle(marker_id)
+            #print(angle + 180)
+            print(position)
+            #print(controller.get_motor_signal(angle + 180, position))
+    except Exception as e:
+        print(e)
+
+    
