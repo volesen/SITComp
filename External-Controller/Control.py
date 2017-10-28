@@ -1,39 +1,39 @@
 import numpy as np
+import time
 
 class State(object):
 	"""docstring for State"""
-	def __init__(self, p, ø, v, w):
+	def __init__(self, p, ø):
 		self.p = p #position
 		self.ø = ø #angle
-		self.v = v #velocity
-		self.w = w #angular velocity
+		self.v = 0 #velocity
+		self.w = 0 #angular velocity
+		self.t = time.time()
+	
+	def update(self, p, ø):
+		dt = time.time() - self.t
+		self.v = (p - self.p)/dt
+		self.w = (w - self.w)/dt
 
-	def update(self):
-		pass
+		self.p = p
+		self.ø = ø
+
+		self.t = time.time()
+
+	def direction(self):
+		direction = np.array(np.cos( self.ø), np.sin(self.ø))
+
+		return direction
 
 	def closed_loop_update(self):
-		pass
+		# we assume constant velocity
+		dt = time.time() - self.t
+		self.p += self.v * self.direction() * dt
+		self.ø += self.w * dt 
 
-waypoints = np.array([
-	[0.75, 0.75],
-	[6.25, 0.75],
-	[6.25, 3.25],
-	[0.75, 3.25]])
-
-print(corner)
-
-
-#print(np.linspace(corner[2][0], corner[1][0], 625))
-#path_span = [np.array(np.arange(corner[i][0], corner[i-1][0], 0.1), np.arange(corner[i][1], corner[i-1][1]), 0.1) for i in range(len(corner))]
-
-#print(path_span)
-
-class PurePursuit(object):
-	"""docstring for PurePursuit"""
-	def __init__(self, arg):
-		self.arg = arg
+	def get_position_angle(self):
+		return (self.p, self.ø)
 		
-
 class PID(object):
 	"""docstring for PID"""
 	def __init__(self, k_p, k_i, k_d):
