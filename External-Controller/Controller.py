@@ -90,16 +90,21 @@ class Controller(object):
         return deviation_angle
 
     def deviation_to_motor_signal(self, deviation_angle):
+        if deviation_angle > 35:
+            return [255, -255]
+        elif deviation_angle < -35:
+            return [-255, 255]
+        
         scaler = math.tanh(deviation_angle / self.DEVIATION_INSENSITIVITY)
         
         #TODO: More thought needs to be put into this one
         #this is just a temporary hacky solution...
         #The two motor speeds (left_motor, right_motor)
         if scaler > 0:
-            return [int(60 - scaler*60), int(60)]
+            return [int(160), int(160 - scaler*160)]
         else: 
             #scaler is negative or zero so addition reduces value
-            return [int(60), int(60 + scaler*60)]
+            return [int(160 + scaler*160), int(160)]
 
     #region - Helper functions
     def centerpoint_from_markercorners(corners):
@@ -130,10 +135,10 @@ class Controller(object):
 marker_id = 7
 cam_dim = (1280, 720)
 
-cam = Camera(1, cam_dim)
+cam = Camera(0, cam_dim)
 detector = DetectRobot(cam_dim, cam, (7, 4), "C:\Data\OneDrive - Syddansk Erhvervsskole\Current\Electronics\SITComp\External-Controller\cameraCalibration.npz")
 
-controller = Controller(100, True)
+controller = Controller(160, False)
 sender = BluetoothSerial("COM3", 9600)
 sender.open()
 
@@ -141,9 +146,10 @@ while True:
     try:
             position, angle = detector.detect_position_angle(marker_id)
             #print(angle + 180)
-            #print(position)
+            print(position)
             #print(controller.get_motor_signal(angle + 180, position))
-            print(Controller.calculate_deviation_angle(angle + 180, controller.position_to_drive_direction(position)))
+            #print(Controller.calculate_deviation_angle(angle + 180, controller.position_to_drive_direction(position)))
+            #print(controller.get_motor_signal(angle + 180, position))
             sender.send_motor_signal(controller.get_motor_signal(angle + 180, position), 0)
     except Exception as e:
         print(e)

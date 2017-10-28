@@ -66,8 +66,9 @@ class DetectRobot(object):
 		Returns:
 			undistorted_img: undistorted image (uncropped, hence same dimmensions as img)
 		"""
-		undistorted_img = cv2.remap(img, self.map_x, self.map_y, cv2.INTER_LINEAR)
-		return undistorted_img
+		return img
+		# undistorted_img = cv2.remap(img, self.map_x, self.map_y, cv2.INTER_LINEAR)
+		# return undistorted_img
 
 	def detect_corners(self, marker_id):
 		"""
