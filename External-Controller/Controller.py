@@ -2,6 +2,7 @@ import math
 from DetectRobot import DetectRobot
 from Camera import Camera
 from Communication import BluetoothSerial
+from time import sleep
 
 
 class Controller(object):
@@ -80,9 +81,11 @@ class Controller(object):
     def calculate_deviation_angle(current_angle, desired_angle):
         #Makes deviation angle be in ]-180; 180]
         #Assuming current_angle and desired_angle are both in [0; 360[
-        deviation_angle = current_angle - desired_angle
+        deviation_angle =  desired_angle - current_angle
         if deviation_angle > 180:
             deviation_angle -= 360
+        elif deviation_angle < -180:
+            deviation_angle += 360
         
         return deviation_angle
 
@@ -93,10 +96,10 @@ class Controller(object):
         #this is just a temporary hacky solution...
         #The two motor speeds (left_motor, right_motor)
         if scaler > 0:
-            return [60 - scaler*60, 60]
+            return [int(60 - scaler*60), int(60)]
         else: 
             #scaler is negative or zero so addition reduces value
-            return [60, 60 + scaler*60]
+            return [int(60), int(60 + scaler*60)]
 
     #region - Helper functions
     def centerpoint_from_markercorners(corners):
@@ -130,16 +133,21 @@ cam_dim = (1280, 720)
 cam = Camera(1, cam_dim)
 detector = DetectRobot(cam_dim, cam, (7, 4), "C:\Data\OneDrive - Syddansk Erhvervsskole\Current\Electronics\SITComp\External-Controller\cameraCalibration.npz")
 
-controller = Controller(200, True)
+controller = Controller(100, True)
 sender = BluetoothSerial("COM3", 9600)
+sender.open()
 
 while True:
     try:
             position, angle = detector.detect_position_angle(marker_id)
             #print(angle + 180)
             #print(position)
-            print(controller.get_motor_signal(angle + 180, position))
+            #print(controller.get_motor_signal(angle + 180, position))
+            print(Controller.calculate_deviation_angle(angle + 180, controller.position_to_drive_direction(position)))
+            sender.send_motor_signal(controller.get_motor_signal(angle + 180, position), 0)
     except Exception as e:
         print(e)
 
-    
+    sleep(0.016)
+
+sender.close()
