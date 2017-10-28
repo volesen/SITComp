@@ -1,9 +1,75 @@
 import numpy as np
 import cv2
 from cv2 import aruco
+import time
 
+class State(object):
+	"""docstring for State"""
+	def __init__(self, p, ø):
+		self.p = p #position
+		self.ø = ø #angle
+		self.v = 0 #velocity
+		self.w = 0 #angular velocity
+		self.t = time.time()
+	
+	def update(self, p, ø):
+		dt = time.time() - self.t
+		self.v = (p - self.p)/dt
+		self.w = (w - self.w)/dt
+
+		self.p = p
+		self.ø = ø
+
+		self.t = time.time()
+
+	def direction(self):
+		direction = np.array(np.cos(self.ø), np.sin(self.ø))
+
+		return direction
+
+	def closed_loop_update(self):
+		# we assume constant velocity
+		dt = time.time() - self.t
+		self.p += self.v * self.direction() * dt
+		self.ø += self.w * dt 
+
+	def get_position_angle(self):
+		return (self.p, self.ø)
 from Camera import Camera
 from PerspectiveTransform import Transform
+
+class State(object):
+	"""docstring for State"""
+	def __init__(self, p, ø):
+		self.p = p #position
+		self.ø = ø #angle
+		self.v = 0 #velocity
+		self.w = 0 #angular velocity
+		self.t = time.time()
+	
+	def update(self, p, ø):
+		dt = time.time() - self.t
+		self.v = (p - self.p)/dt
+		self.w = (ø - self.ø)/dt
+
+		self.p = p
+		self.ø = ø
+
+		self.t = time.time()
+
+	def direction(self):
+		direction = np.array(np.cos(self.ø), np.sin(self.ø))
+
+		return direction
+
+	def closed_loop_update(self):
+		# we assume constant velocity
+		dt = time.time() - self.t
+		self.p += self.v * self.direction() * dt
+		self.ø += self.w * dt 
+
+	def get_position_angle(self):
+		return (self.p, self.ø)
 
 class DetectRobot(object):
 	"""Detect robot from camera input with aruco markers"""
@@ -18,6 +84,8 @@ class DetectRobot(object):
 		Returns:
 			none
 		"""
+		self.state = State(0,np.array([4,3.125]),0 )
+
 		self.dimmensions = dimmensions
 		self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
 		self.aruco_params = aruco.DetectorParameters_create()
@@ -107,23 +175,27 @@ class DetectRobot(object):
 			raise Exception('DetectionError')
 
 	def detect_position_angle(self, marker_id):
+		try:
+			#get corners
+			corners = self.detect_corners(marker_id)
+			# perspective transform corners
+			transformed_corner = self.transform.transform_corners(corners)
 
-		# get corners
-		corners = self.detect_corners(marker_id)
+			#calculate center of aruco marker
+			center = transformed_corner[0] + 0.5 * (transformed_corner[2] - transformed_corner[0])
 
-		# perspective transform corners
-		transformed_corner = self.transform.transform_corners(corners)
+			#calculate direction vector
+			angle = transformed_corner[1] - transformed_corner[2]
 
-		#calculate center of aruco marker
-		center = transformed_corner[0] + 0.5 * (transformed_corner[2] - transformed_corner[0])
+			#calculate angle between x-axis and the direction vector in the interval [-pi, pi]
+			angle = np.degrees(np.arctan2(angle[1], angle[0]))
 
-		#calculate direction vector
-		angle = transformed_corner[1] - transformed_corner[2]
+		except DetectionError:
+			self.state.closed_loop_update()
+		else:
+			self.state.update(center, angle)
 
-		#calculate angle between x-axis and the direction vector in the interval [-pi, pi]
-		angle = np.degrees(np.arctan2(angle[1], angle[0]))
-
-		return (center, angle)
+		return self.state.get_position_angle()
 
 	def return_aruco_marker(self, n, length):
 		"""
