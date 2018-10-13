@@ -121,22 +121,3 @@ class Transform(object):
 		scaled_points = np.matmul(transformed_points, self.scale)
 
 		return scaled_points
-
-#	def transform_points(self, points):
-#		points_prime = np.matmul(self.M, points.T) # transform of point with perspective transform matrix
-#		points_prime = np.divide(points_prime[:-1], points_prime[-1]) # divide the x,y-coordinates by the z-coordinate
-#		return points_prime
-
-#	def get_pos(self, point):
-#		point = self.transform_point(point)
-#		return np.multiply(point, self.scale)
-
-
-#points_prime = np.matmul(self.M, points.T) # transform of point with perspective transform matrix
-#points_prime = np.divide(point_prime[:-1], point_prime[-1]) # divide the x,y-coordinates by the z-coordinate
-#transform = Transform(cv2.imread('test.jpg'), (1,1))
-#corner = np.asarray([[1,0],[0,1],[1,2],[1,2]]).T
-#corner = np.append(corner, np.ones(corner.shape[1]), axis=2)
-#print(corner)
-
-#print(transform.transform_points(corner))
